@@ -26,5 +26,3 @@ export const sendEmail = async ({ email, subject, message }) => {
         throw new Error("Failed to send email");
     }
 };
-
-export default sendEmail;

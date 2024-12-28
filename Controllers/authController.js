@@ -2,7 +2,7 @@ import User from "../Models/authSchema.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
-import sendEmail from "../Utils/sendEmail.js";
+import { sendEmail } from "../Utils/sendEmail.js"; //import sendEmail from "../Utils/sendEmail.js";
 import dotenv from "dotenv";
 
 dotenv.config();
