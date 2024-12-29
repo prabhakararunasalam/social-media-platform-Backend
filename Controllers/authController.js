@@ -2,7 +2,6 @@ import User from "../Models/authSchema.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
-import { sendEmail } from "../Utils/sendEmail.js"; //import sendEmail from "../Utils/sendEmail.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -131,21 +130,37 @@ export const forgotPassword = async (req, res) => {
         user.resetPasswordExpire = Date.now() + 3600000; // 1 hour
         await user.save();
 
-        //send email
-        const resetUrl = `process.env.URL/reset-password/${resetToken}`;
-        const message = `Click on the link to reset your password: \n\n${resetUrl}\n\nIf you did not request this, please ignore this email.`;
-        await sendEmail({
-            email : user.email,
-            subject: "Password Reset",
-            message,
-        });
-
-        //send response
-        res.status(200).json({ message: "Password reset link sent to your email" });
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error });
-    }
-}
+        const transporter = nodemailer.createTransport({
+            //Gmail or yahoo or outlook
+            service: "Gmail",
+            auth: {
+              user: process.env.PASS_MAIL,
+              pass: process.env.PASS_KEY,
+            },
+          });
+          const mailOptions = {
+            from: process.env.PASS_MAIL,
+            to: user.email,
+            subject: "Password Reset Link",
+            text: `You are receiving this because you have requested the reset of the password for your account 
+            Please click the following link or paste it into your browser to complete the process\n\n
+            https://fsd-demo-frontend.vercel.app/reset-password/${token}\n\n
+            If you did not request this, please ignore this email and your password will remain unchanged.`,
+          };
+          transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+              console.log(error);
+              res
+                .status(500)
+                .json({ message: "Internal server error in sending the mail" });
+            } else {
+              res.status(200).json({ message: "Email Sent Successfully" });
+            }
+          });
+        } catch (error) {
+          res.status(500).json({ message: error.message });
+        }
+      };
 
 //REset password 
 
